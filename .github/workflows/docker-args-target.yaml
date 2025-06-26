@@ -18,6 +18,9 @@ on:
       service:
         required: true
         type: string
+      target:
+        required: true
+        type: string
       environment:
         required: false
         type: string
@@ -100,15 +103,15 @@ jobs:
           echo "Docker build arguments: $build_args"
 
       - name: Build and Push Docker Image
-        working-directory: ${{ inputs.service || '.' }}
         run: |
           IMAGE_BASE="${{ env.ARTIFACT_REGISTRY_REGION }}-${{ env.ARTIFACT_REGISTRY_HOST }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_PREFIX }}-${{ inputs.service }}"
           UNIQUE_TAG="${IMAGE_BASE}:${{ steps.vars.outputs.TAG }}"
           LATEST_TAG="${IMAGE_BASE}:latest"
-          echo "Building ${{ inputs.service }}..."
+          echo "Building ${{ inputs.service }} using target ${{ inputs.target }}..."
           docker build \
             --build-arg SERVICE=${{ inputs.service }} \
             ${{ steps.fetch-secrets.outputs.build_args }} \
+            --target ${{ inputs.target }} \
             -t $UNIQUE_TAG \
             -t $LATEST_TAG \
             .
